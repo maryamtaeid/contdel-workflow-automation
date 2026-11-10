@@ -1,0 +1,14 @@
+default:
+  image: alpine:3.22.2
+  timeout: 5m
+workflow:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+variables:
+  APP_MODE: classroom
+check-configuration:
+  timeout: 15m
+  script:
+    - test -n "$LAB_TOKEN" || { echo 'LAB_TOKEN is missing'; exit 1; }
+    - echo 'Required secret is configured'
+    - 'printf "Mode: %s\n" "$APP_MODE"'

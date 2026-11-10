@@ -1,0 +1,13 @@
+name: Reuse verification
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    uses: ./.github/workflows/verify-reusable.yml
+    with:
+      java-version: '17'

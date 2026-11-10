@@ -1,0 +1,17 @@
+name: Secret presence demonstration
+on: workflow_dispatch
+permissions:
+  contents: read
+jobs:
+  inspect-configuration:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    env:
+      LAB_TOKEN: ${{ secrets.LAB_TOKEN }}
+      APP_MODE: classroom
+    steps:
+      - name: Check presence without revealing the value
+        run: |
+          test -n "$LAB_TOKEN" || { echo 'LAB_TOKEN is missing'; exit 1; }
+          echo 'Required secret is configured'
+          echo "Mode $APP_MODE"

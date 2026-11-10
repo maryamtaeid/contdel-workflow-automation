@@ -1,0 +1,18 @@
+include:
+  - local: '/.gitlab/verify.yml'
+# Assumption: a Linux Docker or Kubernetes executor accepting this image.
+# Add an existing runner tag only if required by your project; do not assume "edu".
+default:
+  image: eclipse-temurin:17.0.20.1_1-jdk-jammy
+  timeout: 15m
+variables:
+  MAVEN_OPTS: '-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository'
+workflow:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS && $CI_PIPELINE_SOURCE == "push"'
+      when: never
+    - if: '$CI_COMMIT_BRANCH'
+stages: [verify, package]
+verify:
+  extends: .maven-verification

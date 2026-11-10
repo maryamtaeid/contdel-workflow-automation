@@ -1,0 +1,51 @@
+# Assumption: a Linux Docker or Kubernetes executor accepting this image.
+# Add an existing runner tag only if required by your project; do not assume "edu".
+default:
+  image: eclipse-temurin:17.0.20.1_1-jdk-jammy
+  timeout: 15m
+  interruptible: true
+variables:
+  MAVEN_OPTS: '-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository'
+workflow:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS && $CI_PIPELINE_SOURCE == "push"'
+      when: never
+    - if: '$CI_COMMIT_BRANCH'
+stages: [verify, package]
+cache:
+  key:
+    prefix: maven-jdk17
+    files: [pom.xml, .mvn/wrapper/maven-wrapper.properties]
+  paths: [.m2/repository/]
+verify:
+  stage: verify
+  timeout: 15m
+  script:
+    - sh mvnw -B -ntp clean verify
+    - sha256sum target/contdel-app-1.0-SNAPSHOT.jar > target/application.sha256
+  artifacts:
+    when: always
+    expire_in: 1 week
+    reports:
+      junit:
+        - target/surefire-reports/TEST-*.xml
+        - target/failsafe-reports/TEST-*.xml
+    paths:
+      - target/contdel-app-1.0-SNAPSHOT.jar
+      - target/application.sha256
+      - target/surefire-reports/
+      - target/failsafe-reports/
+package:
+  stage: package
+  needs:
+    - job: verify
+      artifacts: true
+  timeout: 15m
+  script:
+    - sha256sum -c target/application.sha256
+    - result=$(java -jar target/contdel-app-1.0-SNAPSHOT.jar)
+    - test "$result" = 'Hello World!'
+  artifacts:
+    paths: [target/contdel-app-1.0-SNAPSHOT.jar, target/application.sha256]
+    expire_in: 1 week

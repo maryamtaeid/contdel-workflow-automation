@@ -1,0 +1,19 @@
+target/
+node_modules/
+dist/
+build/
+.m2/
+.gradle/
+reports/
+coverage/
+*.log
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+.idea/
+__pycache__/
+
+# Generated PDF exports of these Markdown case sheets
+/lessons/lesson-04/anti-patterns/*.pdf
